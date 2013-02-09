@@ -10,15 +10,17 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-public class MysqlAdapter {
+public class MySqlAdapter {
 
     private static String dbDatabase = "filenames";
     private static String dbUsername = "root";
     private static String dbPassword = "";
 
+    private static String dbTable = "filename";
+
     private Connection conn = null;
 
-    public MysqlAdapter() {
+    public MySqlAdapter() {
         connectToDb();
     }
 
@@ -42,8 +44,46 @@ public class MysqlAdapter {
         }
     }
 
-    public ArrayList<HashMap<String,Object>> getAllRows() {
-        String sql =  "SELECT id_filename, filename FROM filename";
+    public ArrayList<DbFilename> getAllRows() {
+        String sql =  "SELECT * FROM ".concat(dbTable);
+        try {
+            Statement stm = conn.createStatement();
+            boolean returningRows = stm.execute(sql);
+
+            if (!returningRows)
+                return new ArrayList<DbFilename>();
+
+            ResultSet result = stm.getResultSet();
+            ResultSetMetaData meta = result.getMetaData();
+
+            //get column names
+            ArrayList<String> cols = new ArrayList<String>();
+            for (int id=1; id <= meta.getColumnCount(); id++)
+                cols.add(meta.getColumnName(id));
+
+            //fetch out rows
+            ArrayList<DbFilename> rows = new ArrayList<DbFilename>();
+
+            while (result.next()) {
+                DbFilename row = new DbFilename();
+                row.setId(result.getInt("id_filename"));
+                row.setFileName(result.getString("filename"));
+                rows.add(row);
+            }
+
+            result.close();
+            stm.close();
+
+            return rows;
+        } catch (SQLException e) {
+            System.err.println("Error message: " + e.getMessage());
+            System.err.println("Error number: " + e.getErrorCode());
+            return new ArrayList<DbFilename>();
+        }
+    }
+
+    public ArrayList<HashMap<String,Object>> getAllRowsAsHashMap() {
+        String sql =  "SELECT * FROM filename";
         try {
             Statement stm = conn.createStatement();
             boolean returningRows = stm.execute(sql);

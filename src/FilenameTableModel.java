@@ -10,28 +10,13 @@ import java.util.HashMap;
  * To change this template use File | Settings | File Templates.
  */
 public class FilenameTableModel extends AbstractTableModel {
-    private String[] columnNames = {"id", "name"};
-    private Object[][] data;
+    private String[] columnNames = {"id", "filename"};
+    private ArrayList<DbFilename> rowData;
 
     public FilenameTableModel()
     {
         MySqlAdapter adapter = new MySqlAdapter();
-        ArrayList<HashMap<String,Object>> rows = adapter.getAllRows();
-        int count = 0;
-        for (HashMap<String,Object> row : rows) {
-
-            System.out.println(row.keySet());
-            Object[] keys =  row.keySet().toArray();
-
-            for (Object key:keys) {
-                //System.out.println(key);
-            }
-            //columnNames = row.keySet().toArray();
-            //data[count++] = row.values().toArray();
-            System.out.println(row.values());
-        }
-
-
+        rowData = adapter.getAllRows();
     }
 
     public int getColumnCount() {
@@ -39,15 +24,22 @@ public class FilenameTableModel extends AbstractTableModel {
     }
 
     public int getRowCount() {
-        return data.length;
+        return rowData.size();
     }
 
     public String getColumnName(int col) {
-        return columnNames[col];
+        return columnNames[col].toString();
     }
 
-    public Object getValueAt(int row, int col) {
-        return data[row][col];
+    public Object getValueAt(int rowIndex, int colIndex) {
+        DbFilename row = rowData.get(rowIndex);
+        switch (colIndex) {
+            case 0:
+                return row.getId();
+            case 1:
+                return row.getFileName();
+        }
+         return null;
     }
 
     public Class getColumnClass(int c) {
